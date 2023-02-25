@@ -8,13 +8,13 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfiguration {
-    @Value("${spring.datasource.username}")
+    @Value("${DB.user}")
     private String name;
 
-    @Value("${spring.datasource.password}")
+    @Value("${DB.password}")
     private String password;
 
-    @Value("${spring.datasource.url}")
+    @Value("${DB.url}")
     private String url;
 
     @Bean //DATABASE_CONNECTION
