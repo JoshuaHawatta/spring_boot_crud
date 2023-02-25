@@ -1,7 +1,6 @@
 package com.joshua.spring_aula.models;
 
 import jakarta.persistence.*;
-
 import java.io.Serial;
 import java.io.Serializable;
 

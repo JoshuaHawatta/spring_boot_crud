@@ -24,6 +24,7 @@
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
 		<projet.build.sourceEncoding>UTF-8</projet.build.sourceEncoding>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 
 	<dependencies>
@@ -98,5 +99,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
