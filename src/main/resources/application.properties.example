@@ -1,0 +1,8 @@
+server.adress = <SERVER_ADRESS>
+server.port = <SERVER_PORT>
+spring.datasource.username = <USERNAME>
+spring.datasource.password = <PASSWORD>
+spring.datasource.url = jdbc:<YOUR_DB_E.G:mysql>://<HOST>:<PORT>/<DATABASE>
+spring.jpa.properties.hibernate.dialect = <DIALECT>
+spring.h2.console.enabled = <BOOLEAN>
+spring.h2.console.path = /h2-console
