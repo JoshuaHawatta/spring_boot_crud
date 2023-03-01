@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import com.joshua.spring_aula.entities.requestsResults.abstractions.ResponseSet;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UsersController implements UsersUseCase {
@@ -21,17 +22,23 @@ public class UsersController implements UsersUseCase {
             List<Users> users = usersRepository.findAll();
 
             if(users.size() == 0) {
-                var emptyResult = new ResponseResultWithMessage<>(200, users);
+                ResponseResultWithMessage<List<Users>> emptyResult = new ResponseResultWithMessage<>(
+                200,
+                    users
+                );
+
                 emptyResult.setMessage("Nenhum usuário encontrado!");
 
                 return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
             }
 
-            var results = new ResponseResult<>(200, users);
+            ResponseSet<List<Users>> results = new ResponseResult<>(200, users);
             return ResponseEntity.status(results.getStatusCode()).body(results);
         } catch(Exception exception) {
-            var badResult = new ResponseResultWithMessage<>(500, exception.getMessage());
-            badResult.setMessage("Algo aconteceu! Tente novamente mais tarde.");
+            ResponseSet<String> badResult = new ResponseResult<>(
+                500,
+                "Não foi possível realizar a busca!"
+            );
 
             return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
         }
@@ -39,7 +46,28 @@ public class UsersController implements UsersUseCase {
 
     @Override
     public ResponseEntity<ResponseSet<?>> getOneUser(Long id) {
-        return null;
+        Optional<Users> user = usersRepository.findById(id);
+
+        if(user.isEmpty()) {
+            ResponseSet<String> emptyResult = new ResponseResult<>(404, "Usuário não encontrado!");
+            return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
+        }
+
+        try {
+            Users foundedUser = user.get();
+            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(200, foundedUser);
+
+            results.setMessage("Olá " + foundedUser.getName() + "!");
+
+            return ResponseEntity.status(results.getStatusCode()).body(results);
+        } catch(Exception exception) {
+            ResponseSet<String> badResult = new ResponseResult<>(
+                500,
+                "Não foi possível realizar a busca!"
+            );
+
+            return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
+        }
     }
 
     @Override
