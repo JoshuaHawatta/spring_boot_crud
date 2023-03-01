@@ -1,13 +1,14 @@
 package com.joshua.spring_aula.controllers;
 
-import com.joshua.spring_aula.entities.requestsResults.IRequestResult;
-import com.joshua.spring_aula.entities.requestsResults.RequestResult;
+import com.joshua.spring_aula.entities.requestsResults.ResponseResult;
+import com.joshua.spring_aula.entities.requestsResults.ResponseResultWithMessage;
 import com.joshua.spring_aula.models.Users;
 import com.joshua.spring_aula.repositories.UsersRepository;
 import com.joshua.spring_aula.useCases.UsersUseCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import com.joshua.spring_aula.entities.requestsResults.abstractions.ResponseSet;
 import java.util.List;
 
 @RestController
@@ -15,46 +16,49 @@ public class UsersController implements UsersUseCase {
     @Autowired
     UsersRepository usersRepository;
 
-    public ResponseEntity<IRequestResult<?>> getAllUsers() {
+    public ResponseEntity<ResponseSet<?>> getAllUsers() {
         try {
             List<Users> users = usersRepository.findAll();
-            IRequestResult<List<Users>> results;
 
             if(users.size() == 0) {
-                results = new RequestResult<>(users, "Nenhum usuário encontrado!", 200);
-                return ResponseEntity.status(results.getStatusCode()).body(results);
+                ResponseResultWithMessage<List<Users>> emptyResult = new ResponseResultWithMessage<>(200, users);
+                emptyResult.setMessage("Nenhum usuário encontrado!");
+
+                return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
             }
 
-            results = new RequestResult<>(users, 200);
+            ResponseSet<List<Users>> results = new ResponseResult<>(200, users);
             return ResponseEntity.status(results.getStatusCode()).body(results);
         } catch(Exception exception) {
-            RequestResult<Exception> badResult = new RequestResult<>(exception.getMessage(), 500);
+            ResponseResultWithMessage<String> badResult = new ResponseResultWithMessage<>(500, exception.getMessage());
+            badResult.setMessage("Algo aconteceu! Tente novamente mais tarde.");
+
             return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
         }
     }
 
     @Override
-    public ResponseEntity<IRequestResult<?>> getOneUser(Long id) {
+    public ResponseEntity<ResponseSet<?>> getOneUser(Long id) {
         return null;
     }
 
     @Override
-    public ResponseEntity<IRequestResult<?>> getUserByName(String name) {
+    public ResponseEntity<ResponseSet<?>> getUserByName(String name) {
         return null;
     }
 
     @Override
-    public ResponseEntity<IRequestResult<?>> registerUser(Users RBUser) {
+    public ResponseEntity<ResponseSet<?>> registerUser(Users RBUser) {
         return null;
     }
 
     @Override
-    public ResponseEntity<IRequestResult<?>> updateUser(Long id, Users RBUser) {
+    public ResponseEntity<ResponseSet<?>> updateUser(Long id, Users RBUser) {
         return null;
     }
 
     @Override
-    public ResponseEntity<IRequestResult<?>> deleteUser(Long id) {
+    public ResponseEntity<ResponseSet<?>> deleteUser(Long id) {
         return null;
     }
 }
