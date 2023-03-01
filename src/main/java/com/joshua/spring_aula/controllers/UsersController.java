@@ -21,16 +21,16 @@ public class UsersController implements UsersUseCase {
             List<Users> users = usersRepository.findAll();
 
             if(users.size() == 0) {
-                ResponseResultWithMessage<List<Users>> emptyResult = new ResponseResultWithMessage<>(200, users);
+                var emptyResult = new ResponseResultWithMessage<>(200, users);
                 emptyResult.setMessage("Nenhum usuário encontrado!");
 
                 return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
             }
 
-            ResponseSet<List<Users>> results = new ResponseResult<>(200, users);
+            var results = new ResponseResult<>(200, users);
             return ResponseEntity.status(results.getStatusCode()).body(results);
         } catch(Exception exception) {
-            ResponseResultWithMessage<String> badResult = new ResponseResultWithMessage<>(500, exception.getMessage());
+            var badResult = new ResponseResultWithMessage<>(500, exception.getMessage());
             badResult.setMessage("Algo aconteceu! Tente novamente mais tarde.");
 
             return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
