@@ -12,5 +12,8 @@ public abstract class ResponseSet<T> implements IResponseSet<T> {
     public void setStatusCode(Integer statusCode) { this.statusCode = statusCode; }
 
     @Override
+    public T getResult() { return result; }
+
+    @Override
     public void setResult(T result) { this.result = result; }
 }
