@@ -22,25 +22,17 @@ public class UsersController implements UsersUseCase {
             List<Users> users = usersRepository.findAll();
 
             if(users.size() == 0) {
-                ResponseResultWithMessage<List<Users>> emptyResult = new ResponseResultWithMessage<>(
-                200,
-                    users
-                );
-
+                var emptyResult = new ResponseResultWithMessage<>(200, users);
                 emptyResult.setMessage("Nenhum usuário encontrado!");
 
-                return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
+                return ResponseSet.sendResponse(emptyResult);
             }
 
-            ResponseSet<List<Users>> results = new ResponseResult<>(200, users);
-            return ResponseEntity.status(results.getStatusCode()).body(results);
+            return ResponseSet.sendResponse(new ResponseResult<>(200, users));
         } catch(Exception exception) {
-            ResponseSet<String> badResult = new ResponseResult<>(
-                500,
-                "Não foi possível realizar a busca!"
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Não foi possível realizar a busca!")
             );
-
-            return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
         }
     }
 
@@ -48,45 +40,109 @@ public class UsersController implements UsersUseCase {
     public ResponseEntity<ResponseSet<?>> getOneUser(Long id) {
         Optional<Users> user = usersRepository.findById(id);
 
-        if(user.isEmpty()) {
-            ResponseSet<String> emptyResult = new ResponseResult<>(404, "Usuário não encontrado!");
-            return ResponseEntity.status(emptyResult.getStatusCode()).body(emptyResult);
-        }
+        if(user.isEmpty())
+            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
 
         try {
-            Users foundedUser = user.get();
-            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(200, foundedUser);
+            Users foundUser = user.get();
 
-            results.setMessage("Olá " + foundedUser.getName() + "!");
+            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(200, foundUser);
+            results.setMessage("Olá " + foundUser.getName() + "!");
 
-            return ResponseEntity.status(results.getStatusCode()).body(results);
+            return ResponseSet.sendResponse(results);
         } catch(Exception exception) {
-            ResponseSet<String> badResult = new ResponseResult<>(
-                500,
-                "Não foi possível realizar a busca!"
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Não foi possível realizar a busca!")
             );
-
-            return ResponseEntity.status(badResult.getStatusCode()).body(badResult);
         }
     }
 
     @Override
     public ResponseEntity<ResponseSet<?>> getUserByName(String name) {
-        return null;
+        if(name.isEmpty())
+            return ResponseSet.sendResponse(new ResponseResult<>(422, "Nome obrigatório!"));
+
+        try {
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(200, usersRepository.getByName((name.trim().toLowerCase())))
+            );
+        } catch(Exception exception) {
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Erro na busca, tente mais tarde!")
+            );
+        }
     }
 
     @Override
     public ResponseEntity<ResponseSet<?>> registerUser(Users RBUser) {
-        return null;
+        if(RBUser.getName().isEmpty())
+            return ResponseSet.sendResponse(new ResponseResult<>(422, "Nome obrigatório!"));
+        else if(RBUser.getAge() == null)
+            return ResponseSet.sendResponse(new ResponseResult<>(422, "Idade obrigatória!"));
+
+        Users user = new Users(RBUser.getName(), RBUser.getAge());
+
+        try {
+            usersRepository.save(user);
+
+            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(201, user);
+            results.setMessage("Bem-vindo(a) ao sistema, " + user.getName() + "!");
+
+            return ResponseSet.sendResponse(results);
+        } catch(Exception exception) {
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Ops, Tenta criar sua conta mais tarde!")
+            );
+        }
     }
 
     @Override
     public ResponseEntity<ResponseSet<?>> updateUser(Long id, Users RBUser) {
-        return null;
+        if(id == null)
+            return ResponseSet.sendResponse(new ResponseResult<>(422, "ID necessário!"));
+
+        Optional<Users> user = usersRepository.findById(id);
+
+        if(user.isEmpty())
+            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
+
+        try {
+            Users foundUser = user.get();
+
+            foundUser.setName(RBUser.getName());
+            foundUser.setAge(RBUser.getAge());
+
+            usersRepository.save(foundUser);
+            return ResponseSet.sendResponse(new ResponseResult<>(200, foundUser));
+        } catch(Exception exception) {
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Ops, tenta atualizar seus dados mais tarde!")
+            );
+        }
     }
 
     @Override
     public ResponseEntity<ResponseSet<?>> deleteUser(Long id) {
-        return null;
+        if(id == null)
+            return ResponseSet.sendResponse(new ResponseResult<>(422, "ID inválido!"));
+
+        Optional<Users> user = usersRepository.findById(id);
+
+        if (user.isEmpty())
+            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
+
+        try {
+            Users foundUser = user.get();
+
+            usersRepository.deleteById(foundUser.getId());
+
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(200, "Até logo, obrigado pelos peixes!")
+            );
+        } catch (Exception exception) {
+            return ResponseSet.sendResponse(
+                new ResponseResult<>(500, "Ops, tenta deletar sua conta mais tarde!")
+            );
+        }
     }
 }
