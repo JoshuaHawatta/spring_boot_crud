@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface UsersRepository extends JpaRepository<Users, Long> {
-    @Query(value = "SELECT U FROM Users U WHERE LOWER(U.name) = ?1")
-    public List<Users> getByName(String name);
+    @Query(value = "SELECT U FROM Users U WHERE LOWER(U.name) LIKE %?1%")
+    List<Users> getByName(String name);
 }
