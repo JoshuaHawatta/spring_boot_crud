@@ -24,8 +24,6 @@ public class Users implements Serializable {
     //CONSTRUCTORS_OVERLOADS
     public Users() {}
 
-    public Users(Long id) { this.id = id; }
-
     public Users(String name, Integer age) {
         this.name = name;
         this.age = age;
