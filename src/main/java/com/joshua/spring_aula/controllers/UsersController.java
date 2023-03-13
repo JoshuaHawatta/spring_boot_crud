@@ -3,146 +3,60 @@ package com.joshua.spring_aula.controllers;
 import com.joshua.spring_aula.entities.requestsResults.ResponseResult;
 import com.joshua.spring_aula.entities.requestsResults.ResponseResultWithMessage;
 import com.joshua.spring_aula.models.Users;
-import com.joshua.spring_aula.repositories.UsersRepository;
-import com.joshua.spring_aula.useCases.UsersUseCase;
+import com.joshua.spring_aula.services.UsersServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.joshua.spring_aula.entities.requestsResults.abstractions.ResponseSet;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
-public class UsersController implements UsersUseCase {
+@RequestMapping(value = "/users")
+public class UsersController {
     @Autowired
-    UsersRepository usersRepository;
+    UsersServices services;
 
-    public ResponseEntity<ResponseSet<?>> getAllUsers() {
-        try {
-            List<Users> users = usersRepository.findAll();
-
-            if(users.size() == 0) {
-                var emptyResult = new ResponseResultWithMessage<>(200, users);
-                emptyResult.setMessage("Nenhum usuário encontrado!");
-
-                return ResponseSet.sendResponse(emptyResult);
-            }
-
-            return ResponseSet.sendResponse(new ResponseResult<>(200, users));
-        } catch(Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Não foi possível realizar a busca!")
-            );
-        }
+    @GetMapping
+    public ResponseEntity<ResponseSet<?>> findAll() {
+        return ResponseSet.sendResponse(new ResponseResult<>(200, services.findAll()));
     }
 
-    @Override
-    public ResponseEntity<ResponseSet<?>> getOneUser(Long id) {
-        Optional<Users> user = usersRepository.findById(id);
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<ResponseSet<?>> findById(@PathVariable Long id) {
+        var user = services.findById(id);
+        var results = new ResponseResultWithMessage<>(200, user);
 
-        if(user.isEmpty())
-            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
+        results.setMessage("Olá, " + user.getName() + "!");
 
-        try {
-            Users foundUser = user.get();
-
-            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(200, foundUser);
-            results.setMessage("Olá " + foundUser.getName() + "!");
-
-            return ResponseSet.sendResponse(results);
-        } catch(Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Não foi possível realizar a busca!")
-            );
-        }
+        return ResponseSet.sendResponse(results);
     }
 
-    @Override
-    public ResponseEntity<ResponseSet<?>> getUserByName(String name) {
-        if(name.isEmpty())
-            return ResponseSet.sendResponse(new ResponseResult<>(422, "Nome obrigatório!"));
-
-        try {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(200, usersRepository.getByName((name.trim().toLowerCase())))
-            );
-        } catch(Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Erro na busca, tente mais tarde!")
-            );
-        }
+    @GetMapping(value = "/name/{name}")
+    public ResponseEntity<ResponseSet<?>> findByName(@PathVariable String name) {
+        return ResponseSet.sendResponse(new ResponseResult<>(200, services.findByName(name)));
     }
 
-    @Override
-    public ResponseEntity<ResponseSet<?>> registerUser(Users RBUser) {
-        if(RBUser.getName().isEmpty())
-            return ResponseSet.sendResponse(new ResponseResult<>(422, "Nome obrigatório!"));
-        else if(RBUser.getAge() == null)
-            return ResponseSet.sendResponse(new ResponseResult<>(422, "Idade obrigatória!"));
+    @PostMapping(value = "/register")
+    public ResponseEntity<ResponseSet<?>> save(@RequestBody Users RBUser) {
+        services.save(RBUser);
 
-        Users user = new Users(RBUser.getName(), RBUser.getAge());
+        var results = new ResponseResultWithMessage<>(201, RBUser);
+        results.setMessage("Bem-vindo(a) ao sistema, " + RBUser.getName() + "!");
 
-        try {
-            usersRepository.save(user);
-
-            ResponseResultWithMessage<Users> results = new ResponseResultWithMessage<>(201, user);
-            results.setMessage("Bem-vindo(a) ao sistema, " + user.getName() + "!");
-
-            return ResponseSet.sendResponse(results);
-        } catch(Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Ops, Tenta criar sua conta mais tarde!")
-            );
-        }
+        return ResponseSet.sendResponse(results);
     }
 
-    @Override
-    public ResponseEntity<ResponseSet<?>> updateUser(Long id, Users RBUser) {
-        if(id == null)
-            return ResponseSet.sendResponse(new ResponseResult<>(422, "ID necessário!"));
-
-        Optional<Users> user = usersRepository.findById(id);
-
-        if(user.isEmpty())
-            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
-
-        try {
-            Users foundUser = user.get();
-
-            foundUser.setName(RBUser.getName());
-            foundUser.setAge(RBUser.getAge());
-
-            usersRepository.save(foundUser);
-            return ResponseSet.sendResponse(new ResponseResult<>(200, foundUser));
-        } catch(Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Ops, tenta atualizar seus dados mais tarde!")
-            );
-        }
+    @PatchMapping(value = "/update/{id}")
+    public ResponseEntity<ResponseSet<?>> updateUser(@PathVariable Long id, @RequestBody Users RBUser) {
+        services.update(id, RBUser);
+        return ResponseSet.sendResponse(new ResponseResult<>(200, RBUser));
     }
 
-    @Override
-    public ResponseEntity<ResponseSet<?>> deleteUser(Long id) {
-        if(id == null)
-            return ResponseSet.sendResponse(new ResponseResult<>(422, "ID inválido!"));
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<ResponseSet<?>> deleteUser(@PathVariable Long id) {
+        services.deleteById(id);
 
-        Optional<Users> user = usersRepository.findById(id);
-
-        if (user.isEmpty())
-            return ResponseSet.sendResponse(new ResponseResult<>(404, "Usuário não encontrado!"));
-
-        try {
-            Users foundUser = user.get();
-
-            usersRepository.deleteById(foundUser.getId());
-
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(200, "Até logo, obrigado pelos peixes!")
-            );
-        } catch (Exception exception) {
-            return ResponseSet.sendResponse(
-                new ResponseResult<>(500, "Ops, tenta deletar sua conta mais tarde!")
-            );
-        }
+        return ResponseSet.sendResponse(
+            new ResponseResult<>(200, "Até mais, obrigado pelos peixes!")
+        );
     }
 }
