@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface UsersRepository extends JpaRepository<Users, Long> {
     @Query(value = "SELECT U FROM Users U WHERE LOWER(U.name) LIKE %?1%")
-    List<Users> getByName(String name);
+    List<Users> findByName(String name);
 }
